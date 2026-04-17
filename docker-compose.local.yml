@@ -1,0 +1,54 @@
+# Local helper stack only.
+# This file is intentionally not a mini-production clone: local app execution
+# still happens through `pnpm dev`, while Compose only provides support services.
+# That is why this file includes Postgres and Redis, but not app, Caddy, Kuma,
+# or the one-off migration service from production.
+services:
+  # Local Postgres is bound to 127.0.0.1 so it is reachable from the host
+  # machine without exposing it to the wider network.
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:5432:5432"
+    # Keep database state across container restarts during development.
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Healthchecks make it easier to tell when local support services are
+    # actually ready instead of just "container started".
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\"",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # Local Redis follows the same pattern: reachable from localhost only,
+  # persistent enough for development, and separate from the app process.
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--save", "60", "1"]
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+# Only the stateful support services need named volumes in local development.
+volumes:
+  postgres_data:
+  redis_data:

@@ -8,7 +8,7 @@ const features = [
     label: "ISR",
     title: "Incremental Static Regeneration",
     description:
-      "Pages regenerate on a timer without a full rebuild. The timestamp proves it — no Vercel required.",
+      "Pages regenerate on a timer without a full rebuild. The timestamp proves it: no Vercel required.",
     href: "/showcase/isr",
   },
   {
@@ -22,7 +22,7 @@ const features = [
     label: "Stream",
     title: "Streaming with Suspense",
     description:
-      "The shell renders instantly. Slow data streams in progressively — Caddy forwards chunked HTML without flinching.",
+      "The shell renders instantly. Slow data streams in progressively, and Caddy forwards chunked HTML without flinching.",
     href: "/showcase/streaming",
   },
   {
@@ -101,7 +101,8 @@ export default function Home() {
                     Hostinger VPS
                   </a>{" "}
                   with Docker, Caddy, and Postgres. Every feature Vercel
-                  sells — ISR, streaming, image optimization — working on your
+                  sells, from ISR to streaming and image optimization, is
+                  working on your
                   own server.
                 </p>
               </div>
@@ -178,12 +179,12 @@ export default function Home() {
                 <p>
                   HostMarshal is not a starter template. It&rsquo;s a running
                   application with auth, a database, and every major App Router
-                  feature — deployed to a VPS behind Caddy with Docker Compose.
+                  feature, deployed to a VPS behind Caddy with Docker Compose.
                 </p>
                 <p>
                   Each feature has a dedicated demo page that proves it works.
-                  Timestamps, live mutations, streamed HTML — all verifiable in
-                  your browser.
+                  Timestamps, live mutations, and streamed HTML are all
+                  verifiable in your browser.
                 </p>
               </div>
             </div>
@@ -325,7 +326,7 @@ export default function Home() {
                 <div className="grid gap-8 md:grid-cols-[1fr_1px_1fr_1px_1fr]">
                   <div className="space-y-2">
                     <p className="font-mono text-xs text-muted-foreground">
-                      01 &mdash; Build
+                      01 / Build
                     </p>
                     <p className="text-sm text-muted-foreground text-pretty">
                       Multi-stage Docker build produces a minimal standalone
@@ -335,7 +336,7 @@ export default function Home() {
                   <div className="hidden md:block bg-border" />
                   <div className="space-y-2">
                     <p className="font-mono text-xs text-muted-foreground">
-                      02 &mdash; Route
+                      02 / Route
                     </p>
                     <p className="text-sm text-muted-foreground text-pretty">
                       Caddy sits in front as a reverse proxy with automatic
@@ -345,7 +346,7 @@ export default function Home() {
                   <div className="hidden md:block bg-border" />
                   <div className="space-y-2">
                     <p className="font-mono text-xs text-muted-foreground">
-                      03 &mdash; Persist
+                      03 / Persist
                     </p>
                     <p className="text-sm text-muted-foreground text-pretty">
                       PostgreSQL stores user data. A Docker volume persists
@@ -372,8 +373,8 @@ export default function Home() {
                 </h2>
                 <div className="space-y-4 text-muted-foreground text-pretty">
                   <p>
-                    Everything you see on this site — the auth flow, the
-                    streaming demos, the ISR timestamps — is served from a
+                    Everything you see on this site, from the auth flow and
+                    streaming demos to the ISR timestamps, is served from a
                     single Hostinger KVM VPS. No serverless functions, no edge
                     network, no hidden infrastructure.
                   </p>

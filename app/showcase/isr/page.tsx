@@ -52,7 +52,7 @@ export default function ISRDemo() {
               </p>
               <ol className="list-decimal pl-5 space-y-1 text-sm text-muted-foreground">
                 <li>Note the timestamp above.</li>
-                <li>Refresh the page immediately &mdash; the timestamp stays the same (cached).</li>
+                <li>Refresh the page immediately. The timestamp stays the same (cached).</li>
                 <li>Wait at least 15 seconds, then refresh again.</li>
                 <li>The first refresh after 15s still shows the old page (stale-while-revalidate), but the next one shows a new timestamp.</li>
               </ol>

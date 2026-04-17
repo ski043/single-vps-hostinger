@@ -57,7 +57,7 @@ export default async function ActionsDemo() {
               </p>
               {entries.length > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  Stored in-memory &mdash; resets on container restart
+                  Stored in memory and resets on container restart
                 </p>
               )}
             </div>

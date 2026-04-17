@@ -33,14 +33,14 @@ export default function ImageDemo() {
               The images below are served through the built-in{" "}
               <code className="text-foreground">next/image</code> optimizer.
               They are resized, converted to modern formats, and cached
-              automatically &mdash; all on the VPS.
+              automatically, all on the VPS.
             </p>
           </div>
 
           <div className="grid gap-px md:grid-cols-2">
             <div className="border border-border p-8 space-y-4">
               <p className="font-heading text-sm text-muted-foreground">
-                Local asset &mdash; optimized
+                Optimized local asset
               </p>
               <div className="flex items-center justify-center bg-muted p-8">
                 <Image
@@ -60,7 +60,7 @@ export default function ImageDemo() {
 
             <div className="border border-border p-8 space-y-4">
               <p className="font-heading text-sm text-muted-foreground">
-                Local asset &mdash; optimized
+                Optimized local asset
               </p>
               <div className="flex items-center justify-center bg-muted p-8">
                 <Image
@@ -107,7 +107,7 @@ export default function ImageDemo() {
             <ul className="space-y-2 text-muted-foreground text-pretty">
               <li className="flex gap-2">
                 <span className="text-primary shrink-0">&bull;</span>
-                Image optimization is not platform-exclusive &mdash; it works in
+                Image optimization is not platform-exclusive. It works in
                 standalone mode on any Node host.
               </li>
               <li className="flex gap-2">

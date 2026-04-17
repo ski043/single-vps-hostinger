@@ -1,0 +1,163 @@
+# Production stack for the VPS deployment.
+# Only Caddy is internet-facing; the other services stay on the internal Docker network.
+services:
+  # Postgres stays internal-only. The app reaches it over the `edge` network
+  # using the service name `postgres`, which is why `.env` keeps that hostname.
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\"",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - edge
+
+  # Redis is also private to the Docker network. It exists as a support service
+  # for the app and is not meant to be reachable from the public internet.
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--save", "60", "1"]
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - edge
+
+  # The app image tag is chosen at deploy time through `.deploy.env`, while
+  # the app's runtime configuration still comes from the server-side `.env`.
+  app:
+    image: ${APP_IMAGE:?Set APP_IMAGE in .deploy.env or your shell}
+    restart: unless-stopped
+    # `depends_on` helps sequence startup, but it does not guarantee the app is
+    # fully ready to serve real traffic forever. The app still needs its own
+    # healthcheck and Caddy may still see transient failures during boot.
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # `.env` holds runtime behavior like domains, DB credentials, auth config,
+    # and Redis connection info. It is separate from `.deploy.env`, which only
+    # chooses which published image tags this release should run.
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+    # `expose` makes port 3000 available to other containers on the network
+    # without publishing it on the VPS itself. Caddy is the public entrypoint.
+    expose:
+      - "3000"
+    # The Next.js cache lives on a named volume so ISR, image optimization, and
+    # other cached artifacts can survive container restarts.
+    volumes:
+      - next_cache:/app/.next/cache
+    # This healthcheck gives Compose and operators a simple "is the app serving
+    # HTTP locally?" signal instead of assuming the process is healthy just
+    # because the container started.
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000').then((res)=>process.exit(res.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - edge
+
+  # This one-off ops service exists only to run Prisma migrations during deploy.
+  # It is kept out of the default `up` path with the `ops` profile so it does
+  # not behave like a long-running application container.
+  migrate:
+    image: ${MIGRATION_IMAGE:?Set MIGRATION_IMAGE in .deploy.env or your shell}
+    profiles:
+      - ops
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    restart: "no"
+    networks:
+      - edge
+
+  # Kuma is private behind Caddy just like the app. We expose its internal port
+  # to sibling containers, but we do not publish it directly on the host.
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    restart: unless-stopped
+    expose:
+      - "3001"
+    # Persist the Kuma database and configuration so monitors survive restarts.
+    volumes:
+      - uptime_kuma_data:/app/data
+    networks:
+      - edge
+
+  # Caddy is the only service that publishes host ports because it terminates
+  # HTTPS and reverse proxies requests to the internal services.
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    # Waiting for the target containers to start reduces noisy early failures,
+    # but Caddy still depends on the app and Kuma being healthy over time.
+    depends_on:
+      app:
+        condition: service_started
+      uptime-kuma:
+        condition: service_started
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?Set APP_DOMAIN in .env}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL:?Set LETSENCRYPT_EMAIL in .env}
+      STATUS_DOMAIN: ${STATUS_DOMAIN:?Set STATUS_DOMAIN in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # The Caddyfile is mounted read-only so the running container can use the
+      # checked-in config without being able to modify it.
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Caddy keeps certificates and runtime state in named volumes so HTTPS
+      # does not need to be reissued on every container restart.
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - edge
+
+# One shared application network keeps service-to-service traffic private.
+networks:
+  edge:
+
+# Named volumes keep stateful data outside ephemeral containers.
+volumes:
+  postgres_data:
+  redis_data:
+  next_cache:
+  uptime_kuma_data:
+  caddy_data:
+  caddy_config:

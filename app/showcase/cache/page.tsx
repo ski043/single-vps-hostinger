@@ -100,7 +100,7 @@ export default async function CacheDemo() {
                 But this page caches the fetch result for 10 seconds.
               </li>
               <li>
-                Refresh immediately &mdash; the data timestamp stays the same.
+                Refresh immediately. The data timestamp stays the same.
               </li>
               <li>
                 After 10 seconds, the next request triggers a background
@@ -124,7 +124,8 @@ export default async function CacheDemo() {
               </li>
               <li className="flex gap-2">
                 <span className="text-primary shrink-0">&bull;</span>
-                This is per-fetch caching, not whole-page ISR &mdash; different data sources can have different revalidation intervals.
+                This is per-fetch caching, not whole-page ISR, so different
+                data sources can have different revalidation intervals.
               </li>
             </ul>
           </div>

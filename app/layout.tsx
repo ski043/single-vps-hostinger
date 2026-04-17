@@ -3,9 +3,9 @@ import { Geist, Geist_Mono, Roboto, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const playfairDisplayHeading = Playfair_Display({subsets:['latin'],variable:'--font-heading'});
+const playfairDisplayHeading = Playfair_Display({ subsets: ['latin'], variable: '--font-heading' });
 
-const roboto = Roboto({subsets:['latin'],variable:'--font-sans'});
+const roboto = Roboto({ subsets: ['latin'], variable: '--font-sans' });
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
