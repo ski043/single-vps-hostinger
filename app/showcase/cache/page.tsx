@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { connection } from "next/server";
 
 async function getTimeData() {
   const baseUrl = process.env.BETTER_AUTH_URL || "http://localhost:3000";
@@ -19,6 +20,8 @@ async function getTimeData() {
 }
 
 export default async function CacheDemo() {
+  await connection();
+
   const data = await getTimeData();
   const fetchedAt = new Date().toISOString();
 

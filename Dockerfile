@@ -24,7 +24,7 @@ RUN apt-get update \
 FROM base AS dependencies
 
 # Copy dependency manifests first to maximize build cache reuse.
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY package.json pnpm-lock.yaml ./
 
 # Installing dependencies in a dedicated stage lets later stages reuse the
 # same node_modules tree without re-running pnpm install every time.
@@ -73,7 +73,7 @@ FROM base AS migrator
 # The migration image is intentionally small and focused: it only needs Prisma,
 # config, and dependencies to run `prisma migrate deploy` during rollout.
 COPY --from=dependencies /app/node_modules ./node_modules
-COPY package.json pnpm-workspace.yaml prisma.config.ts ./
+COPY package.json prisma.config.ts ./
 COPY prisma ./prisma
 
 CMD ["npx", "prisma", "migrate", "deploy"]
